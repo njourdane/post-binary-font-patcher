@@ -17,8 +17,8 @@ SVG_PATH = OUTPUT_DIR / 'preview.svg'
 PNG_PATH = OUTPUT_DIR / 'preview.png'
 FONT_PATH = OUTPUT_DIR / 'Aligaturetestfont-Regular.ttf'
 FONT_NAME = "A ligature test font"
-TEXT = "Elle est doué.e !"
-WIDTH, HEIGHT = 600, 400
+TEXT = "noeud"
+WIDTH, HEIGHT = 300, 200
 
 
 CSS = f'''

@@ -1,212 +1,140 @@
+# based on https://github.com/ToxicFrog/Ligaturizer/blob/master/ligaturize.py
+
 import fontforge
 import psMat
-from os import path
+from pathlib import Path
 
-char_dict = {
-    'ampersand': '&',
-}
+INPUT_FONT_PATH = Path("/usr/share/fonts/truetype/comfortaa/Comfortaa-Regular.ttf")
+FONT_NAME = 'A ligature test font'
+OUTPUT_DIR = Path(__file__).parent / "output"
 
-ligatures = [
+LIGATURES = [
     {
-        'chars': ['ampersand', 'ampersand'],
-        'firacode_ligature_name': 'ampersand_ampersand.liga',
+        'chars': ['o', 'e'],
+        'ligature_name': 'oe',
     },
 ]
 
-
-# Constants
-COPYRIGHT = '''
-Programming ligatures added by Ilya Skriblovsky from FiraCode
-FiraCode Copyright (c) 2015 by Nikita Prokopov'''
+FEATURE_SCRIPT_LANG_TUPLE = (
+    ('calt', (
+        ('DFLT', ('dflt',)),
+        ('arab', ('dflt',)),
+        ('armn', ('dflt',)),
+        ('cyrl', ('SRB ', 'dflt')),
+        ('geor', ('dflt',)),
+        ('grek', ('dflt',)),
+        ('lao ', ('dflt',)),
+        ('latn', ('CAT ', 'ESP ', 'GAL ', 'ISM ', 'KSM ', 'LSM ', 'MOL ', 'NSM ', 'ROM ', 'SKS ', 'SSM ', 'dflt')),
+        ('math', ('dflt',)),
+        ('thai', ('dflt',))
+    )),
+)
 
 
 class LigatureCreator(object):
+    def __init__(self, font_path, font_name, output_dir):
+        self.font_path = font_path
+        self.font_name = font_name
+        self.output_dir = output_dir
 
-    def __init__(self, font, firacode):
-        self.font = font
-        self.firacode = firacode
+        self.font = fontforge.open(str(self.font_path))
         self._lig_counter = 0
 
-        # Scale firacode to correct em height.
-        self.firacode.em = self.font.em
-        self.emwidth = self.font[ord('m')].width
-
-    def copy_ligature_from_source(self, ligature_name):
-        try:
-            self.firacode.selection.none()
-            self.firacode.selection.select(ligature_name)
-            self.firacode.copy()
-            return True
-        except ValueError:
-            return False
-
-    def correct_ligature_width(self, glyph):
-        """Correct the horizontal advance and scale of a ligature."""
-
-        if glyph.width == self.emwidth:
-            return
-
-        scale = float(self.emwidth) / glyph.width
-        glyph.transform(psMat.scale(scale, 1.0))
-        glyph.width = self.emwidth
-
-    def add_ligature(self, input_chars, firacode_ligature_name):
-        if not self.copy_ligature_from_source(firacode_ligature_name):
-            # Ligature not in source font.
-            return
-
+    def add_ligature(self, input_chars, ligature_name):
         self._lig_counter += 1
-        ligature_name = 'lig.{}'.format(self._lig_counter)
+
+        lookup_name_tmpl = f'lookup.{ self._lig_counter }.%d'
+        lookup_sub_name_tmpl = f'lookup.sub.{ self._lig_counter }.%d'
+        cr_name_tmpl = f'CR.{ self._lig_counter }.%d'
+
+        self.font.selection.none()
+        self.font.selection.select(ligature_name)
+        self.font.copy()
 
         self.font.createChar(-1, ligature_name)
         self.font.selection.none()
         self.font.selection.select(ligature_name)
         self.font.paste()
-        self.correct_ligature_width(self.font[ligature_name])
+        self.font[ligature_name].transform(psMat.scale(0.5))
 
         self.font.selection.none()
         self.font.selection.select('space')
         self.font.copy()
 
-        lookup_name = lambda i: 'lookup.{}.{}'.format(self._lig_counter, i)
-        lookup_sub_name = lambda i: 'lookup.sub.{}.{}'.format(self._lig_counter, i)
-        cr_name = lambda i: 'CR.{}.{}'.format(self._lig_counter, i)
-
-        for i, char in enumerate(input_chars):
-            self.font.addLookup(lookup_name(i), 'gsub_single', (), ())
-            self.font.addLookupSubtable(lookup_name(i), lookup_sub_name(i))
-
-            if char not in self.font:
-                # We assume here that this is because char is a single letter
-                # (e.g. 'w') rather than a character name, and the font we're
-                # editing doesn't have glyphnames for letters.
-                self.font[ord(char_dict[char])].glyphname = char
+        for i, char in enumerate(input_chars): # ["period", "e"]
+            self.font.addLookup(lookup_name_tmpl % i, 'gsub_single', (), ())
+            self.font.addLookupSubtable(lookup_name_tmpl % i, lookup_sub_name_tmpl % i)
 
             if i < len(input_chars) - 1:
-                self.font.createChar(-1, cr_name(i))
+                self.font.createChar(-1, cr_name_tmpl % i)
                 self.font.selection.none()
-                self.font.selection.select(cr_name(i))
+                self.font.selection.select(cr_name_tmpl % i)
                 self.font.paste()
-
-                self.font[char].addPosSub(lookup_sub_name(i), cr_name(i))
+                self.font[char].addPosSub(lookup_sub_name_tmpl % i, cr_name_tmpl % i)
             else:
-                self.font[char].addPosSub(lookup_sub_name(i), ligature_name)
+                self.font[char].addPosSub(lookup_sub_name_tmpl % i, ligature_name)
 
-        calt_lookup_name = 'calt.{}'.format(self._lig_counter)
-        self.font.addLookup(calt_lookup_name, 'gsub_contextchain', (),
-            (('calt', (('DFLT', ('dflt',)),
-                       ('arab', ('dflt',)),
-                       ('armn', ('dflt',)),
-                       ('cyrl', ('SRB ', 'dflt')),
-                       ('geor', ('dflt',)),
-                       ('grek', ('dflt',)),
-                       ('lao ', ('dflt',)),
-                       ('latn', ('CAT ', 'ESP ', 'GAL ', 'ISM ', 'KSM ', 'LSM ', 'MOL ', 'NSM ', 'ROM ', 'SKS ', 'SSM ', 'dflt')),
-                       ('math', ('dflt',)),
-                       ('thai', ('dflt',)))),))
-        #print('CALT %s (%s)' % (calt_lookup_name, firacode_ligature_name))
+        calt_lookup_name = f'calt.{ self._lig_counter }'
+        self.font.addLookup(calt_lookup_name, 'gsub_contextchain', (), FEATURE_SCRIPT_LANG_TUPLE)
+
+        print('CALT %s (%s)' % (calt_lookup_name, ligature_name))
         for i, char in enumerate(input_chars):
-            self.add_calt(calt_lookup_name, 'calt.{}.{}'.format(self._lig_counter, i),
-                '{prev} | {cur} @<{lookup}> | {next}',
-                prev = ' '.join(cr_name(j) for j in range(i)),
-                cur = char,
-                lookup = lookup_name(i),
-                next = ' '.join(input_chars[i+1:]))
+            prev = ' '.join(cr_name_tmpl % j for j in range(i))
+            next = ' '.join(input_chars[i+1:])
+            lookup = lookup_name_tmpl % i
+            subtable_name = f'calt.{ self._lig_counter }.{ i }'
+            rule = f'{ prev } | { char } @<{ lookup }> | { next }'
+            print(subtable_name, ":", rule)
+            self.font.addContextualSubtable(calt_lookup_name, subtable_name, 'glyph', rule)
 
-        # Add ignore rules
-        self.add_calt(calt_lookup_name, 'calt.{}.{}'.format(self._lig_counter, i+1),
-            '| {first} | {rest} {last}',
-            first = input_chars[0],
-            rest = ' '.join(input_chars[1:]),
-            last = input_chars[-1])
-        self.add_calt(calt_lookup_name, 'calt.{}.{}'.format(self._lig_counter, i+2),
-            '{first} | {first} | {rest}',
-            first = input_chars[0],
-            rest = ' '.join(input_chars[1:]))
+    def replace_sfnt(self, key, value):
+        self.font.sfnt_names = tuple(
+            (row[0], key, value)
+            if row[1] == key
+            else row
+            for row in self.font.sfnt_names
+        )
 
-    def add_calt(self, calt_name, subtable_name, spec, **kwargs):
-        spec = spec.format(**kwargs)
-        #print('    %s: %s ' % (subtable_name, spec))
-        self.font.addContextualSubtable(calt_name, subtable_name, 'glyph', spec)
+    def update_font_metadata(self):
+        old_name = self.font.familyname
+        clean_name = self.font_name.replace(' ', '')
+        suffix = (self.font.fontname.split('-', 1) + [''])[1]
 
+        self.font.familyname = self.font_name
+        self.font.fullname = "%s %s" % (self.font_name, suffix) if suffix else self.font_name
+        self.font.fontname = "%s-%s" % (clean_name, suffix) if suffix else clean_name
 
-def replace_sfnt(font, key, value):
-    font.sfnt_names = tuple(
-        (row[0], key, value)
-        if row[1] == key
-        else row
-        for row in font.sfnt_names
-    )
+        path_name = Path(self.font.path).name
+        print(f"Ligaturizing font { path_name } ({ old_name }) as '{ self.font_name }'")
 
-def update_font_metadata(font, new_name):
-    # Figure out the input font's real name (i.e. without a hyphenated suffix)
-    # and hyphenated suffix (if present)
-    old_name = font.familyname
-    try:
-        suffix = font.fontname.split('-')[1]
-    except IndexError:
-        suffix = None
+        # self.font.copyright = (self.font.copyright or '') + COPYRIGHT
+        self.replace_sfnt('UniqueID', '%s; Ligaturized' % self.font.fullname)
+        self.replace_sfnt('Preferred Family', self.font_name)
+        self.replace_sfnt('Compatible Full', self.font_name)
+        self.replace_sfnt('Family', self.font_name)
+        self.replace_sfnt('WWS Family', self.font_name)
 
-    # Replace the old name with the new name whether or not a suffix was present.
-    # If a suffix was present, append it accordingly.
-    font.familyname = new_name
-    if suffix:
-        font.fullname = "%s %s" % (new_name, suffix)
-        font.fontname = "%s-%s" % (new_name.replace(' ', ''), suffix)
-    else:
-        font.fullname = new_name
-        font.fontname = new_name.replace(' ', '')
+    def ligaturize_font(self):
+        self.update_font_metadata()
 
-    print("Ligaturizing font %s (%s) as '%s'" % (
-        path.basename(font.path), old_name, new_name))
+        ligature_length = lambda lig: len(lig['chars'])
+        for lig_spec in sorted(LIGATURES, key = ligature_length):
+            try:
+                self.add_ligature(lig_spec['chars'], lig_spec['ligature_name'])
+            except Exception as e:
+                print('Exception while adding ligature: {}'.format(lig_spec))
+                raise
 
-    font.copyright = (font.copyright or '') + COPYRIGHT
-    replace_sfnt(font, 'UniqueID', '%s; Ligaturized' % font.fullname)
-    replace_sfnt(font, 'Preferred Family', new_name)
-    replace_sfnt(font, 'Compatible Full', new_name)
-    replace_sfnt(font, 'Family', new_name)
-    replace_sfnt(font, 'WWS Family', new_name)
-    print("done")
+        # Work around a bug in Fontforge where the underline height is subtracted from
+        # the underline width when you call generate().
+        self.font.upos += self.font.uwidth
 
-def ligaturize_font(input_font_file, output_dir, ligature_font_file, output_name):
-    font = fontforge.open(input_font_file)
-    update_font_metadata(font, output_name)
+        output_font_type = '.otf' if self.font_path.suffix.lower() == '.otf' else '.ttf'
+        output_font_file = self.output_dir / (self.font.fontname + output_font_type)
+        print(f"saving to '{ output_font_file }' ({ self.font.fullname })")
+        self.font.generate(str(output_font_file))
 
-    print('    ...using ligatures from %s' % ligature_font_file)
-    firacode = fontforge.open(ligature_font_file)
-
-    creator = LigatureCreator(font, firacode)
-    ligature_length = lambda lig: len(lig['chars'])
-    for lig_spec in sorted(ligatures, key = ligature_length):
-        try:
-            creator.add_ligature(lig_spec['chars'], lig_spec['firacode_ligature_name'])
-        except Exception as e:
-            print('Exception while adding ligature: {}'.format(lig_spec))
-            raise
-
-    # Work around a bug in Fontforge where the underline height is subtracted from
-    # the underline width when you call generate().
-    font.upos += font.uwidth
-
-    # Generate font type (TTF or OTF) corresponding to input font extension
-    # (defaults to TTF)
-    if input_font_file[-4:].lower() == '.otf':
-        output_font_type = '.otf'
-    else:
-        output_font_type = '.ttf'
-
-    # Generate font & move to output directory
-    output_font_file = path.join(output_dir, font.fontname + output_font_type)
-    print("    ...saving to '%s' (%s)" % (output_font_file, font.fullname))
-    font.generate(output_font_file)
-
-def main():
-    ligaturize_font(
-        input_font_file="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        output_dir="./output",
-        ligature_font_file="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        output_name='A ligature test font',
-    )
 
 if __name__ == '__main__':
-    main()
+    ligature_creator = LigatureCreator(INPUT_FONT_PATH, FONT_NAME, OUTPUT_DIR)
+    ligature_creator.ligaturize_font()
