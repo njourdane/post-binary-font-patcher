@@ -1,14 +1,11 @@
 import fontforge
 from pathlib import Path
 import psMat
+import json
 
 INPUT_FONT_PATH = Path("/usr/share/fonts/opentype/artemisia/GFSArtemisia.otf")
 OUTPUT_FONT_PATH = Path.home() / ".fonts" / "GFSArtemisia.otf"
-
-LIGATURES = [
-    ["eur.ice", "eur", "rice"],
-    [".e", "", "e"],
-]
+LIGATURES_PATH = Path(__file__).parent / "ligatures.json"
 
 GLYPH_SCALE = 0.8
 VERTICAL_TRANSLATE_RATIO = 0.35
@@ -55,7 +52,14 @@ def build_font():
     font.addLookup('liga', 'gsub_ligature', (), feature_script_lang)
     font.addLookupSubtable('liga', 'liga')
 
-    for pattern, bottom_text, top_text in LIGATURES:
+    with open(LIGATURES_PATH) as ligatures_file:
+        ligatures = json.loads(ligatures_file.read())
+
+    for pattern, bottom_text, top_text in ligatures:
         add_ligature(pattern, bottom_text, top_text)
 
     font.generate(str(OUTPUT_FONT_PATH))
+
+
+if __name__ == "__main__":
+    build_font()
