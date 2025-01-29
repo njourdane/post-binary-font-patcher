@@ -12,39 +12,41 @@ VERTICAL_TRANSLATE_RATIO = 0.35
 VERTICAL_OFFSET_RATIO = 0.15
 
 font = fontforge.open(str(INPUT_FONT_PATH))
-vmove_ratio = font.em * VERTICAL_TRANSLATE_RATIO
-voffset_ratio = font.em * VERTICAL_OFFSET_RATIO
+v_move = font.em * VERTICAL_TRANSLATE_RATIO
+v_offset = font.em * VERTICAL_OFFSET_RATIO
 feature_script_lang = (("liga", (("latn", ("dflt")),)),)
 
 
-def build_layer(chars: list[str], y_offset):
-    x_offset = 0
+def build_layer(chars: list[str], x_offset: int, y_offset: int, scale: float):
+    _x_offset = x_offset
     layer = fontforge.layer()
     for char in chars:
         char_layer = font[char].layers[font[char].activeLayer]
-        char_layer.transform(psMat.translate(x_offset, y_offset))
+        char_layer.transform(psMat.translate(_x_offset, y_offset))
         layer += char_layer
-        x_offset += font[char].width
-    return layer, x_offset
+        _x_offset += font[char].width
+
+    layer.transform(psMat.scale(scale))
+    return layer, _x_offset
 
 
-def build_multi_glyph(name: str, bottom_chars: list[str], top_chars: list[str]):
-    layer_top, top_width = build_layer(top_chars, voffset_ratio + vmove_ratio)
-    layer_btm, btm_width = build_layer(bottom_chars, voffset_ratio - vmove_ratio)
+def build_liga_glyph(name: str, base_chars: list[str], bottom_chars: list[str], top_chars: list[str]):
+    layer_base, base_width = build_layer(base_chars, 0, 0, 1)
+    layer_top, top_width = build_layer(top_chars, base_width, v_offset + v_move, GLYPH_SCALE)
+    layer_btm, btm_width = build_layer(bottom_chars, base_width, v_offset - v_move, GLYPH_SCALE)
 
     font.createChar(-1, name)
-    font[name].layers[font[name].activeLayer] = layer_top + layer_btm
-    font[name].width = max(top_width, btm_width)
-    font[name].transform(psMat.scale(GLYPH_SCALE))
+    font[name].layers[font[name].activeLayer] = layer_base + layer_top + layer_btm
+    font[name].width = base_width + max(top_width, btm_width)
 
 
 def get_chars(text):
     return ["period" if char == "." else char for char in text]
 
 
-def add_ligature(pattern: str, bottom_text: str, top_text: str):
+def add_ligature(pattern: str, base: str, bottom_text: str, top_text: str):
     name = pattern.replace('.', '_')
-    build_multi_glyph(name, get_chars(bottom_text), get_chars(top_text))
+    build_liga_glyph(name, get_chars(base), get_chars(bottom_text), get_chars(top_text))
     font[name].addPosSub("liga", get_chars(pattern))
 
 
@@ -55,8 +57,8 @@ def build_font():
     with open(LIGATURES_PATH) as ligatures_file:
         ligatures = json.loads(ligatures_file.read())
 
-    for pattern, bottom_text, top_text in ligatures:
-        add_ligature(pattern, bottom_text, top_text)
+    for pattern, base, bottom_text, top_text in ligatures:
+        add_ligature(pattern, base, bottom_text, top_text)
 
     font.generate(str(OUTPUT_FONT_PATH))
 
