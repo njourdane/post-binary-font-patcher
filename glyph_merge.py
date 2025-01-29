@@ -12,6 +12,7 @@ VERTICAL_OFFSET_RATIO = 0.15
 font = fontforge.open(str(INPUT_FONT_PATH))
 vmove_ratio = font.em * VERTICAL_TRANSLATE_RATIO
 voffset_ratio = font.em * VERTICAL_OFFSET_RATIO
+feature_script_lang = (("liga", (("latn", ("dflt")),)),)
 
 
 def build_layer(chars: list[str], y_offset):
@@ -29,10 +30,19 @@ def build_multi_glyph(name: str, top_chars: list[str], bottom_chars: list[str]):
     layer_top, top_width = build_layer(top_chars, voffset_ratio + vmove_ratio)
     layer_btm, btm_width = build_layer(bottom_chars, voffset_ratio - vmove_ratio)
 
+    font.createChar(-1, name)
     font[name].layers[font[name].activeLayer] = layer_top + layer_btm
     font[name].width = max(top_width, btm_width)
     font[name].transform(psMat.scale(GLYPH_SCALE))
 
 
-build_multi_glyph("u", ["a", "c"], ["e", "m"])
+font.addLookup('liga', 'gsub_ligature', (), feature_script_lang)
+font.addLookupSubtable('liga', 'liga')
+
+build_multi_glyph("eur_ice", ["r", "i", "c", "e"], ["e", "u", "r"])
+font["eur_ice"].addPosSub("liga", ["e", "u", "r", "period", "i", "c", "e"])
+
+build_multi_glyph("e_", ["e"], [])
+font["e_"].addPosSub("liga", ["period", "e"])
+
 font.generate(str(OUTPUT_FONT_PATH))
