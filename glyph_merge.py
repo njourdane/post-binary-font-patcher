@@ -5,6 +5,11 @@ import psMat
 INPUT_FONT_PATH = Path("/usr/share/fonts/opentype/artemisia/GFSArtemisia.otf")
 OUTPUT_FONT_PATH = Path.home() / ".fonts" / "GFSArtemisia.otf"
 
+LIGATURES = [
+    ["eur.ice", "eur", "rice"],
+    [".e", "", "e"],
+]
+
 GLYPH_SCALE = 0.8
 VERTICAL_TRANSLATE_RATIO = 0.35
 VERTICAL_OFFSET_RATIO = 0.15
@@ -26,7 +31,7 @@ def build_layer(chars: list[str], y_offset):
     return layer, x_offset
 
 
-def build_multi_glyph(name: str, top_chars: list[str], bottom_chars: list[str]):
+def build_multi_glyph(name: str, bottom_chars: list[str], top_chars: list[str]):
     layer_top, top_width = build_layer(top_chars, voffset_ratio + vmove_ratio)
     layer_btm, btm_width = build_layer(bottom_chars, voffset_ratio - vmove_ratio)
 
@@ -36,13 +41,21 @@ def build_multi_glyph(name: str, top_chars: list[str], bottom_chars: list[str]):
     font[name].transform(psMat.scale(GLYPH_SCALE))
 
 
-font.addLookup('liga', 'gsub_ligature', (), feature_script_lang)
-font.addLookupSubtable('liga', 'liga')
+def get_chars(text):
+    return ["period" if char == "." else char for char in text]
 
-build_multi_glyph("eur_ice", ["r", "i", "c", "e"], ["e", "u", "r"])
-font["eur_ice"].addPosSub("liga", ["e", "u", "r", "period", "i", "c", "e"])
 
-build_multi_glyph("e_", ["e"], [])
-font["e_"].addPosSub("liga", ["period", "e"])
+def add_ligature(pattern: str, bottom_text: str, top_text: str):
+    name = pattern.replace('.', '_')
+    build_multi_glyph(name, get_chars(bottom_text), get_chars(top_text))
+    font[name].addPosSub("liga", get_chars(pattern))
 
-font.generate(str(OUTPUT_FONT_PATH))
+
+def build_font():
+    font.addLookup('liga', 'gsub_ligature', (), feature_script_lang)
+    font.addLookupSubtable('liga', 'liga')
+
+    for pattern, bottom_text, top_text in LIGATURES:
+        add_ligature(pattern, bottom_text, top_text)
+
+    font.generate(str(OUTPUT_FONT_PATH))
