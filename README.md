@@ -58,6 +58,11 @@ GFS Artemisia:
 
 ![](./previews/artemisia.png)
 
+## License
+
+- Post binary font patcher (this project): [MIT](./LICENSE)
+- Fonts used in preview images: [OFL](https://openfontlicense.org/)
+
 ## Contact
 
 You can either:
