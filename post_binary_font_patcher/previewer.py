@@ -27,23 +27,40 @@ class Previewer:
         self.cmd_rasterize = f"inkscape { self.svg_path } --export-filename={ self.png_path }"
 
     def get_css(self):
-        return f'''text {{
+        return f'''
+text {{
     font-family: "{ self.font_name }";
     text-anchor: middle;
     alignment-baseline: middle;
     fill: darkslategrey;
     font-size: { self.font_size };
-}}'''
+}}
+
+rect {{
+    fill: grey;
+}}
+'''
 
     def get_svg_prefix(self):
         return f'''<?xml version="1.0" encoding="utf-8"?>
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="{ self.img_width }"
-            height="{ self.img_height }">
-        <style>\n{ self.get_css() }</style>\n'''
+<svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="{ self.img_width }"
+        height="{ self.img_height }">
+    <style>\n{ self.get_css() }</style>
+'''
 
-    def get_svg(self) -> str:
+    def draw_background(self):
+        return f'''
+    <rect
+        x="0"
+        y="0"
+        width="{ self.img_width }"
+        height="{ self.img_height }"
+    />
+'''
+
+    def draw_text(self) -> str:
         svg = ''
         subtexts = self.text.split("|")
         for idx, subtext in enumerate(subtexts):
@@ -52,11 +69,11 @@ class Previewer:
         return svg
 
     def build_svg_file(self):
-        svg = self.get_svg()
         self.svg_path.parent.mkdir(parents=True, exist_ok=True)
+        svg = f'{ self.svg_prefix }{ self.draw_background() }{ self.draw_text() }{ self.svg_suffix }'
 
         with open(self.svg_path, 'w', encoding='utf-8') as svg_file:
-            svg_file.write(f'{ self.svg_prefix }{ svg }{ self.svg_suffix }')
+            svg_file.write(svg)
 
         print(f"Preview svg image generated in { self.svg_path }")
 
