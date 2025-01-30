@@ -4,19 +4,21 @@ from pathlib import Path
 import fontforge
 import psMat
 
+from . import config
+
 
 class FontPatcher:
     def __init__(self, font_path: Path):
         self.font_path = font_path
         self.font = fontforge.open(str(font_path))
 
-        self.ligatures_path = Path(__file__).parent.parent / "ligatures.json"
-        self.glyph_scale = 0.89
+        self.ligatures_path = config.LIGATURES_PATH
+        self.glyph_scale = config.GLYPH_SCALE
 
-        self.v_spacing = self.font.em * 0.27
-        self.v_offset = self.font.em * 0.03
+        self.v_spacing = self.font.em * config.VERTICAL_SPACING
+        self.v_offset = self.font.em * config.VERTICAL_OFFSET
         self.feature_script_lang = (("liga", (("latn", ("dflt")),)),)
-        self.output_font_path = Path.home() / ".fonts" / self.font_path.name
+        self.output_font_path = config.OUTPUT_FONT_DIR / self.font_path.name
 
     def build_layer(self, chars: list[str], x_offset: int, y_offset: int, scale: float):
         _x_offset = x_offset
