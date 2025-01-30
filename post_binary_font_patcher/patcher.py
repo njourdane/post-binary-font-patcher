@@ -11,7 +11,7 @@ class FontPatcher:
         self.font_path = font_path
         self.font = fontforge.open(str(font_path))
 
-        self.ligatures_path = Path(__file__).parent / "ligatures.json"
+        self.ligatures_path = Path(__file__).parent.parent / "ligatures.json"
         self.glyph_scale = 0.89
 
         self.v_spacing = self.font.em * 0.27

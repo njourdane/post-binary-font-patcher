@@ -16,7 +16,7 @@ class Previewer:
         self.font_name = font_name
         self.text = text
 
-        preview_output_dir = Path(__file__).parent / 'output'
+        preview_output_dir = Path(__file__).parent.parent / 'output'
 
         self.svg_path = preview_output_dir / 'preview.svg'
         self.png_path = preview_output_dir / 'preview.png'
