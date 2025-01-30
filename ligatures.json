@@ -1,5 +1,51 @@
 [
-["eur.ice", "", "eur", "rice"],
+["teur.ice", "t", "eur", "rice"],
+["teur.ice.s", "t", "eurs", "rices"],
+
+["eux.se", "eu", "x", "se"],
+["eux.se.s", "eu", "x", "ses"],
+
+["eur.se", "eu", "r", "se"],
+["eur.se.s", "eu", "rs", "ses"],
+
+["o.te", "o", "", "te"],
+["o.te.s", "o", "s", "tes"],
+
+["if.ve", "i", "f", "ve"],
+["if.ve.s", "i", "fs", "ves"],
+
+["anc.he", "an", "", "he"],
+["anc.he.s", "an", "s", "hes"],
+
+["tien.ne", "tien", "", "ne"],
+["tien.ne.s", "tien", "s", "nes"],
+
+["cel.le.ui", "ce", "ui", "lle"],
+["ce.lle.ux", "ce", "ux", "lles"],
+
+["fils.le", "fi", "s", "lle"],
+["fil.le.s", "fi", "s", "lles"],
+
+["be.lle.au", "be", "au", "lle"],
+["be.lle.aux", "be", "aux", "lles"],
+
+["tous.te.s", "tou", "s", "tes"],
+
+["fo.u.lle", "fo", "u", "lle"],
+["fo.u.lles", "fo", "ux", "olles"],
+
+["el.le", "el", "", "le"],
+["el.le.s", "el", "s", "les"],
+
+["mon.a", "m", "on", "a"],
+["Mon.a", "M", "on", "a"],
+
+["son.a", "s", "on", "a"],
+["Son.a", "S", "on", "a"],
+
 ["la.e", "l", "e", "a"],
-[".e", "", "", "e"]
+["La.e", "L", "e", "a"],
+
+[".e", "", "", "e"],
+[".e.s", "", "s", "es"]
 ]
