@@ -21,17 +21,16 @@ class FontPatcher:
         self.output_font_path = config.OUTPUT_FONT_DIR / self.font_path.name
 
     def build_layer(self, chars: list[str], x_offset: int, y_offset: int, scale: float):
-        _x_offset = x_offset
+        x_rel_offset = 0
         layer = fontforge.layer()
         for char in chars:
             char_layer = self.font[char].layers[self.font[char].activeLayer]
-            char_layer.transform(psMat.translate(_x_offset, y_offset))
+            char_layer.transform(psMat.translate(x_offset + x_rel_offset, y_offset))
             layer += char_layer
-            _x_offset += self.font[char].width
+            x_rel_offset += self.font[char].width
 
         layer.transform(psMat.scale(scale))
-        return layer, _x_offset
-
+        return layer, int(x_rel_offset * scale)
 
     def build_liga_glyph(self, name: str, base_chars: list[str], bottom_chars: list[str], top_chars: list[str]):
         layer_base, base_width = self.build_layer(base_chars, 0, 0, 1)
@@ -42,16 +41,13 @@ class FontPatcher:
         self.font[name].layers[self.font[name].activeLayer] = layer_base + layer_top + layer_btm
         self.font[name].width = base_width + max(top_width, btm_width)
 
-
     def get_chars(self, text):
         return ["period" if char == "." else char for char in text]
-
 
     def add_ligature(self, pattern: str, base: str, bottom_text: str, top_text: str):
         name = pattern.replace('.', '_')
         self.build_liga_glyph(name, self.get_chars(base), self.get_chars(bottom_text), self.get_chars(top_text))
         self.font[name].addPosSub("liga", self.get_chars(pattern))
-
 
     def build_font(self):
         self.font.addLookup('liga', 'gsub_ligature', (), self.feature_script_lang)
