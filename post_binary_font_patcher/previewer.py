@@ -21,7 +21,7 @@ class Previewer:
         self.font_size = config.PREVIEW_FONT_SIZE
         self.img_width = config.PREVIEW_IMG_WIDTH
         self.img_height = config.PREVIEW_IMG_HEIGHT
-
+        self.interline = config.PREVIEW_FONT_INTERLINE
         self.svg_prefix = self.get_svg_prefix()
         self.svg_suffix = '</svg>'
         self.cmd_rasterize = f"inkscape { self.svg_path } --export-filename={ self.png_path }"
@@ -64,7 +64,7 @@ rect {{
         svg = ''
         subtexts = self.text.split("\n")
         for idx, subtext in enumerate(subtexts):
-            height = idx * self.font_size * 1.1 + self.img_height / (len(subtexts) + 0.5)
+            height = idx * self.font_size * self.interline + self.img_height / (len(subtexts) + 0.5)
             svg += f'<text x="{ self.img_width / 2 }px" y="{ height }px">{ subtext }</text>\n'
         return svg
 

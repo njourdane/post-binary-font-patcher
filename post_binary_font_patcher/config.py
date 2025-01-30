@@ -13,6 +13,7 @@ PREVIEW_PNG_PATH = PREVIEW_OUTPUT_DIR / 'preview.png'
 PREVIEW_IMG_WIDTH = 600
 PREVIEW_IMG_HEIGHT = 400
 PREVIEW_FONT_SIZE = 28
+PREVIEW_FONT_INTERLINE = 1.15
 
 PREVIEW_TEXT = '''
 Camille est un.e auteur.ice-compositeur.ice doué.e,
