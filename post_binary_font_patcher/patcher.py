@@ -1,4 +1,3 @@
-from sys import argv, exit
 import json
 from pathlib import Path
 
@@ -64,13 +63,3 @@ class FontPatcher:
 
         self.font.generate(str(self.output_font_path))
         print(f"Font generated in { self.output_font_path }")
-
-
-if __name__ == "__main__":
-    if len(argv) != 2:
-        print(f'usage: { argv[0] } <font path>')
-        print(f'example: { argv[0] } /usr/share/fonts/opentype/artemisia/GFSArtemisia.otf')
-        exit(1)
-
-    font_patcher = FontPatcher(Path(argv[1]))
-    font_patcher.build_font()

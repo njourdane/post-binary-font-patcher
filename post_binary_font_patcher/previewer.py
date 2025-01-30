@@ -6,7 +6,6 @@ Note: cairosvg does not support ligatures but Inkscape does,
 hence the system call.
 """
 
-from sys import argv, exit
 from pathlib import Path
 import subprocess
 
@@ -65,14 +64,3 @@ class Previewer:
     def rasterize_svg(self):
         subprocess.call(self.cmd_rasterize, shell=True)
         print(f"Preview png image generated in { self.svg_path }")
-
-
-if __name__ == "__main__":
-    if len(argv) != 3:
-        print(f'usage: { argv[0] } <font name> <preview text>')
-        print(f'example: { argv[0] } "GFS Artemisia" "Hello|world"')
-        exit(1)
-
-    previewer = Previewer(argv[1], argv[2])
-    previewer.build_svg_file()
-    previewer.rasterize_svg()
