@@ -25,7 +25,7 @@ enseignant.e-chercheur.se et ielles sont
 tou.te.s deux rebel.le.s mais inclusif.ve.s.
 
 Son.a fils.le est musicien.ne-intervenant.e,
-ce.lle.ux des voisin.e.s sont coifeur.se.s, nous
+ce.lle.ux des voisin.e.s sont coiffeur.se.s, nous
 sommes tou.te.s nombreux.se.s à penser que
 ce sont des be.lle.aux humain.e.s.
 '''
