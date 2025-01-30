@@ -12,10 +12,10 @@ from . import config
 
 
 class Previewer:
-    def __init__(self, font_name: str, text: str) -> None:
+    def __init__(self, font_name: str) -> None:
         self.font_name = font_name
-        self.text = text
 
+        self.text = config.PREVIEW_TEXT.strip()
         self.svg_path = config.PREVIEW_SVG_PATH
         self.png_path = config.PREVIEW_PNG_PATH
         self.font_size = config.PREVIEW_FONT_SIZE
@@ -62,7 +62,7 @@ rect {{
 
     def draw_text(self) -> str:
         svg = ''
-        subtexts = self.text.split("|")
+        subtexts = self.text.split("\n")
         for idx, subtext in enumerate(subtexts):
             height = idx * self.font_size * 1.1 + self.img_height / (len(subtexts) + 0.5)
             svg += f'<text x="{ self.img_width / 2 }px" y="{ height }px">{ subtext }</text>\n'

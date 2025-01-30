@@ -14,22 +14,22 @@
 ["if.ve", "i", "f", "ve"],
 ["if.ve.s", "i", "fs", "ves"],
 
-["anc.he", "an", "", "he"],
-["anc.he.s", "an", "s", "hes"],
+["anc.he", "anc", "", "he"],
+["anc.he.s", "anc", "s", "hes"],
 
-["tien.ne", "tien", "", "ne"],
-["tien.ne.s", "tien", "s", "nes"],
+["ien.ne", "tien", "", "ne"],
+["ien.ne.s", "tien", "s", "nes"],
 
 ["cel.le.ui", "ce", "ui", "lle"],
 ["ce.lle.ux", "ce", "ux", "lles"],
 
-["fils.le", "fi", "s", "lle"],
-["fil.le.s", "fi", "s", "lles"],
+["fils.le", "fil", "s", "le"],
+["fil.le.s", "fil", "s", "les"],
 
 ["be.lle.au", "be", "au", "lle"],
 ["be.lle.aux", "be", "aux", "lles"],
 
-["tous.te.s", "tou", "s", "tes"],
+["tou.te.s", "tou", "s", "tes"],
 
 ["fo.u.lle", "fo", "u", "lle"],
 ["fo.u.lles", "fo", "ux", "olles"],

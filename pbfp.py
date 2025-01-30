@@ -15,8 +15,8 @@ def print_patch_usage():
 
 
 def print_preview_usage():
-    print(f'usage: { argv[0] } <font name> <preview text>')
-    print(f'example: { argv[0] } "GFS Artemisia" "Hello|world"')
+    print(f'usage: { argv[0] } <font name>')
+    print(f'example: { argv[0] } "GFS Artemisia"')
 
 
 def main():
@@ -35,11 +35,11 @@ def main():
         font_patcher.build_font()
 
     elif command == "preview":
-        if len(argv) != 4:
+        if len(argv) != 3:
             print_preview_usage()
             exit(1)
 
-        previewer = Previewer(argv[2], argv[3])
+        previewer = Previewer(argv[2])
         previewer.build_svg_file()
         previewer.rasterize_svg()
 
